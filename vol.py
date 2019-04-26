@@ -12,7 +12,7 @@ import pandas as pd
 #from datetime import timedelta
 'Variable is stock adj close'
 
-import matplotlib
+import matplotlib.pyplot
 
 #object is a data frame,last five years adjust close price with days as index
 #ex=pd.read_csv('etf_example.csv',parse_dates=['Date'], dayfirst=True,index_col=0)
@@ -47,18 +47,26 @@ class Covariance(object):
         simple_return=self.iloc[1:,:]/self.iloc[:-1,:].values-1
         return simple_return
     
-    def monthly_time(self):
+    def monthly_time(self,time_option=None):
+        
+        if time_option==None:
+            timedelta=21
+        else :
+            timedelta=10
+        
+        
         Time_list=[]
         time=self.index[-1]
         i=-1
+        
         while time > self.index[0]:
             try:
                 Time_list.append(time)
-                i=i-21
+                i=i-timedelta
                 time=self.index[i]
             #time=time-timedelta(days=30)
             except:
-                return Time_list
+                return [Time_list,timedelta]
         
                 
 
@@ -67,14 +75,14 @@ class Covariance(object):
         return log_return
     
 
-    def find_vol(self):
+    def find_monthly_vol(self):
         daily_log_return = Covariance.daily_logreturn(self)
         daily_log_return_var=daily_log_return.resample('M').var()
         Monthly_var=daily_log_return_var*21
        
         return Monthly_var
 
-    def find_cov(self):
+    def find_cov(self,time_option=None):
         
         daily_log_return = Covariance.daily_logreturn(self)
         
@@ -83,7 +91,12 @@ class Covariance(object):
                 
         #Month_return=daily_log_return.resample('M').sum()
         
-        Month = Covariance.monthly_time(self)
+        time_info= Covariance.monthly_time(self,time_option)
+        
+        Month=time_info[0]
+        
+        timedelta=time_info[1]
+        
         
         Month1=Month[:-1]
         
@@ -106,7 +119,7 @@ class Covariance(object):
             
             Month_return.loc[m1] = r1.product(axis=0)  - 1                   
             
-            cov=np.cov(r.T)*21
+            cov=np.cov(r.T)*timedelta
             
             cov_dic[m1]=cov
             
@@ -132,8 +145,8 @@ class Predict_cov(object):
         if weight==None:
             
             weight=0.5
-                
         weights = np.geomspace(1, weight**(period-1),num=period)
+        #print(weights)
         
         train=self[-period:]
         
@@ -163,14 +176,14 @@ class Predict_cov(object):
 class vol_backtesting(object):
 
   
-    def back_error(self, option=None, period=None):
+    def back_error(self, timeoption,option=None, period=None):
         
         if period ==None:
             
             period=20
             
 # find the covaricance matrix
-        full=Covariance.find_cov(self)
+        full=Covariance.find_cov(self,timeoption)
         
                 
         full_cov=full[0]
@@ -181,7 +194,12 @@ class vol_backtesting(object):
                
         L=len(full_cov)
         
+        #print('L:'+str(L))
+        
         end=L-period
+        
+        
+        #print('end:'+str(end))
         
         Error=[]
         

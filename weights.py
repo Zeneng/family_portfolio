@@ -16,7 +16,7 @@ from scipy.optimize import SR1
 
 import numpy as np
 
-import matplotlib
+import matplotlib.pyplot
 
 import pandas as pd
 
@@ -51,12 +51,12 @@ class Balance(object):
 
 
 
-    def find_weights(self,selected,target):
+    def find_weights(self,selected,target,timeoption):
         
         portfolio=self[self.columns[self.columns.isin(selected)]]
         
         
-        info= cv.find_cov(portfolio)
+        info= cv.find_cov(portfolio,timeoption)
         
         #obtain the covaraince
         cov=info[0]
@@ -114,7 +114,7 @@ class Balance(object):
     
 
 
-    def back_testing(self, selected, capital, target, bench, option=None, period=None):
+    def back_testing(self, selected, capital, target, bench, timeoption,option=None, period=None):
 #        
 #        #calculate the realized gain and loss
 #     def back_error(self, option=None, period=None):
@@ -128,9 +128,9 @@ class Balance(object):
     
     # find the covaricance matrix
     
-        bench_return=vb.back_error(self[[bench]],option,period)[3]
+        bench_return=vb.back_error(self[[bench]],timeoption,option,period)[3]
     
-        full=vb.back_error(portfolio,option,period)
+        full=vb.back_error(portfolio,timeoption,option,period)
                    
         Pre_cov=full[1]
         

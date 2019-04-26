@@ -8,9 +8,12 @@ Created on Thu Sep 20 16:49:19 2018
 
 'API import the new month adjusted close price data from Yahoo Finance'
 import fix_yahoo_finance as yf
+from weights import Balance as BA
 #import pandas as pd
 #from pandas.tseries.offsets import CustomBusinessMonthBegin
-data = yf.download(['SPY','LQD','MCHI','QQQ','REM','ICLN','QCLN','IBB','XBI','FBT','IVV','FINX','XBI'],start='2016-01-01',end='2019-04-22')
+data = yf.download(['SPY','MCHI','QQQ','ICLN','QCLN','IBB','XBI','FBT','IVV','IYR','SCHH'],start='2014-01-01',end='2019-04-22')
+
+data = yf.download(['SPY'],start='2014-01-01',end='2019-04-22')
 
 
 'Convert the daily data into monthly data'
@@ -24,6 +27,16 @@ data = yf.download(['SPY','LQD','MCHI','QQQ','REM','ICLN','QCLN','IBB','XBI','FB
 #
 #mthly_ohlcva = data.resample(custom_month_starts, how=ohlc_dict)
 adjclose=data['Adj Close']
+adjclose1=adjclose.dropna()
+
+selected=['SPY','QQQ','IBB','XBI','FBT','IYR','SCHH']
+target=-0.01
+capital=20000
+bench='SPY'
+timoption='bi'
+BA.back_testing(adjclose1,selected,capital,target,bench,timoption)
+weights=BA.find_weights(adjclose1,selected,target,timoption)
+table=BA.find_shares(adjclose1, selected, weights,capital)
 
 #mdata=Adjdata.resample('M').mean()
 
