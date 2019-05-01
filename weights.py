@@ -26,23 +26,70 @@ class Balance(object):
         
     
     #object function
+    #object function
     def rosen(x,pre_cv):
             return x.dot(pre_cv).dot(x)
         
+    def rosen1(x,pre_cv,re):
+            mu=re.dot(x)
+            var=x.dot(pre_cv).dot(x)
+            return -mu/np.sqrt(var)
     
-    def Optimizer(col_number, pre_cv, re, target):
+    def rosen2(x,pre_cv,re,target):
+            mu=re.dot(x)
+            return -mu
+        
+    
+    def Optimizer(col_number, pre_cv, re, target,option=None):
+        
+        if option==None:
+            
+        
          #bonds of weights
-        bds=opt.Bounds(np.zeros(col_number), np.repeat(np.inf,col_number))
-        
-        #linear constraints
-        cnst=opt.LinearConstraint(np.array([np.ones(col_number),re]), [1,target], [1,np.inf])
-        
-        #initialize the weights
-        x0=np.ones(col_number)/col_number
-        
-        #res=opt.minimize(rosen,x0, args=pre_cv, bounds=bds,constraints={cnst})
-        
-        res=opt.minimize(Balance.rosen,x0, args=pre_cv, method='trust-constr',  jac="2-point", hess=SR1(), bounds=bds,constraints=cnst)
+                bds=opt.Bounds(np.zeros(col_number), np.repeat(np.inf,col_number))
+
+                #linear constraints
+                cnst=opt.LinearConstraint(np.array([np.ones(col_number),re]), [1,target], [1,np.inf])
+
+                #initialize the weights
+                x0=np.ones(col_number)/col_number
+
+                #res=opt.minimize(rosen,x0, args=pre_cv, bounds=bds,constraints={cnst})
+
+                res=opt.minimize(Balance.rosen,x0, args=pre_cv, method='trust-constr',  jac="2-point", hess=SR1(), bounds=bds,constraints=cnst)
+
+        elif option==1:
+            
+                #bonds of weights
+                bds=opt.Bounds(np.zeros(col_number), np.repeat(np.inf,col_number))
+
+                #linear constraints    
+                cnst=opt.LinearConstraint(np.array([np.ones(col_number)]), [1], [1])
+
+                #initialize the weights
+                x0=np.ones(col_number)/col_number
+
+                #res=opt.minimize(rosen,x0, args=pre_cv, bounds=bds,constraints={cnst})
+                res=opt.minimize(Balance.rosen1,x0, args=(pre_cv,re), method='trust-constr',  jac="2-point", hess=SR1(), bounds=bds,constraints=cnst)
+                #res=opt.minimize(Balance.rosen1,x0, args=(pre_cv,re), method='SLSQP', bounds=bds,constraints=cnst)
+        else:
+                bds=opt.Bounds(np.zeros(col_number), np.repeat(np.inf,col_number))
+
+                #cnst=opt.NonlinearConstraint(Balance.rosen,[0],[target])
+                
+                #nonlinear constraint
+                cnst=({'type': 'ineq', 'fun': lambda x, pre_cv, re, target : target-x.dot(pre_cv).dot(x), 'args': (pre_cv,re,target)},
+                      
+                     {'type': 'eq', 'fun': lambda x, pre_cv, re, target : sum(x)-1, 'args': (pre_cv,re,target)},
+                     )
+
+                #initialize the weights
+                x0=np.ones(col_number)/col_number
+
+
+                res=opt.minimize(Balance.rosen2,x0, args=(pre_cv,re,target), method='SLSQP', bounds=bds,constraints=cnst)
+
+                
         
         
         return res.x
@@ -114,7 +161,7 @@ class Balance(object):
     
 
 
-    def back_testing(self, selected, capital, target, bench, timeoption,option=None, period=None):
+    def back_testing(self, selected, capital, target, option1, bench, timeoption,option=None, period=None):
 #        
 #        #calculate the realized gain and loss
 #     def back_error(self, option=None, period=None):
@@ -134,7 +181,13 @@ class Balance(object):
                    
         Pre_cov=full[1]
         
+        Real_cov=full[2]
+        
         Real_return=full[3]
+        
+        #take the average return
+        re= np.mean(Real_return.iloc[:,]).values
+        
      #L is the length of prediction period                                 
         L=len(Pre_cov)
         
@@ -152,9 +205,10 @@ class Balance(object):
         
         Bench_Capital=[capital]
         
+        Fake_Capital=[capital]
+        
                
-      
-#loop to find all the prediction error        
+             
         for i in range(L,0,-1):
             
             past_return=Real_return.iloc[i,:].values
@@ -163,16 +217,20 @@ class Balance(object):
             
             Bench_return=bench_return.iloc[i-1,:].values
                         
-            re= np.mean(Real_return.iloc[i:i+3,]).values
+            #re= np.mean(Real_return.iloc[i:,]).values
             
             print(i)
             
-            weights=Balance.Optimizer(col_number,Pre_cov[i-1], re, target)
+            weights=Balance.Optimizer(col_number,Pre_cov[i-1], re, target,option1)
+            
+            fake_weights=Balance.Optimizer(col_number,Real_cov[i-1], re, target,option1)
             
             Weights.append(weights)
                         
 #portfolio predicted returns
             Pre_return=np.sum(weights*past_return)
+            
+            Fake_return=np.sum(fake_weights*past_return)
             
 #portfolio realized returns
             Realized_return=np.sum(weights*realized_return)
@@ -189,11 +247,15 @@ class Balance(object):
             
             bench_capital_new=Bench_Capital[-1]*(1+Bench_return)
             
+            fake_capital_new=Fake_Capital[-1]*(1+Fake_return)
+            
             Pre_Capital.append(pre_capital_new)
             
             Real_Capital.append(real_capital_new)
             
             Bench_Capital.append(bench_capital_new)
+            
+            Fake_Capital.append(fake_capital_new)
             
             Cap_Error.append(pre_capital_new-real_capital_new)
             
@@ -217,6 +279,7 @@ class Balance(object):
         matplotlib.pyplot.figure(2)
         plt1=matplotlib.pyplot.plot_date(dates, Real_Capital[1:][::-1],'o--')  
         plt1=matplotlib.pyplot.plot_date(dates, Bench_Capital[1:][::-1],'c--')
+        plt1=matplotlib.pyplot.plot_date(dates, Fake_Capital[1:][::-1],'r--')
         
         matplotlib.pyplot.figure(3)
         plt1=matplotlib.pyplot.plot_date(dates, Real_Capital[1:][::-1],'g--')  
@@ -224,9 +287,7 @@ class Balance(object):
         
         
         return [Result,Weights,plt,plt1]
-
-
-
+       
 
 
        

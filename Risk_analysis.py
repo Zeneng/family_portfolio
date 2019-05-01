@@ -13,3 +13,7 @@ Created on Thu Sep 20 17:02:25 2018
 
 
 'Plot the historical weights of each asset'
+
+class screen(object):
+    
+    def __init__(self)

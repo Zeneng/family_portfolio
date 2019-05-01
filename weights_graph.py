@@ -11,9 +11,9 @@ import fix_yahoo_finance as yf
 from weights import Balance as BA
 #import pandas as pd
 #from pandas.tseries.offsets import CustomBusinessMonthBegin
-data = yf.download(['SPY','MCHI','QQQ','ICLN','QCLN','IBB','XBI','FBT','IVV','IYR','SCHH'],start='2014-01-01',end='2019-04-22')
+data = yf.download(['SPY','MCHI','QQQ','ICLN','QCLN','IBB','XBI','FBT','IVV','IYR','SCHH'],start='2007-01-01',end='2019-04-22')
 
-data = yf.download(['SPY'],start='2014-01-01',end='2019-04-22')
+data = yf.download(['SPY'],start='2005-01-01',end='2019-04-22')
 
 
 'Convert the daily data into monthly data'
@@ -29,17 +29,28 @@ data = yf.download(['SPY'],start='2014-01-01',end='2019-04-22')
 adjclose=data['Adj Close']
 adjclose1=adjclose.dropna()
 
-selected=['SPY','QQQ','IBB','XBI','FBT','IYR','SCHH']
-target=-0.01
-capital=20000
-bench='SPY'
-timoption='bi'
-BA.back_testing(adjclose1,selected,capital,target,bench,timoption)
-weights=BA.find_weights(adjclose1,selected,target,timoption)
-table=BA.find_shares(adjclose1, selected, weights,capital)
+def main():
+    selected=['SPY','QQQ','IBB','XBI','FBT','IYR','SCHH']
+    target=0.005
+    capital=50000
+    bench='SPY'
+    
+#time option has bi or None, bi means bi weekly rebalance the data, None means monthy rebalance
+    timoption=None
+    
+#option1 has the chocie of None, 1, 2 which refers to min variance, max sharpo ratio, max return given covariance  
+    option1=2
+    
+    BA.back_testing(adjclose1,selected,capital,target,option1,bench,timoption)
+    weights=BA.find_weights(adjclose1,selected,target,timoption)
+    table=BA.find_shares(adjclose1, selected, weights,capital)
 
 #mdata=Adjdata.resample('M').mean()
 
+main()
+#the red line the if we predicted vol 100% correct, and blue dot line is the prediction line
+#the blue dash line is sp100
+table
 
 
 

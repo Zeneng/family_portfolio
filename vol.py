@@ -14,6 +14,9 @@ import pandas as pd
 
 import matplotlib.pyplot
 
+##from sklearn.multioutput import MultiOutputRegressor
+##from sklearn.ensemble import GradientBoostingRegressor
+
 #object is a data frame,last five years adjust close price with days as index
 #ex=pd.read_csv('etf_example.csv',parse_dates=['Date'], dayfirst=True,index_col=0)
 #
@@ -67,7 +70,6 @@ class Covariance(object):
             #time=time-timedelta(days=30)
             except:
                 return [Time_list,timedelta]
-        
                 
 
     def daily_logreturn(self):
@@ -75,7 +77,7 @@ class Covariance(object):
         return log_return
     
 
-    def find_monthly_vol(self):
+    def find_vol(self):
         daily_log_return = Covariance.daily_logreturn(self)
         daily_log_return_var=daily_log_return.resample('M').var()
         Monthly_var=daily_log_return_var*21
@@ -144,9 +146,9 @@ class Predict_cov(object):
         
         if weight==None:
             
-            weight=0.5
+            weight=0.9
+                
         weights = np.geomspace(1, weight**(period-1),num=period)
-        #print(weights)
         
         train=self[-period:]
         
@@ -158,7 +160,49 @@ class Predict_cov(object):
         
         return EWMA
     
-    #def HAR(self,)
+# =============================================================================
+#     def HAR(self, Har, train=None):
+#         #train is the period of training
+#         if train==None:
+#             train=36
+#         if len(self)<train:
+#             return print('Need more covairance data or low down the training period')
+#         
+#         (x,y,z)=self.shape
+#     
+#         (h1,h2,h3)=Har
+#         
+#         self=np.log(np.sqrt(self))
+#         
+#         self=self.reshape(z,x*y)
+#         
+#         #example Har=(1,3,12)
+#         
+#         Response=self[h3:,:]
+#         Feature1=self[h3-1:-2,:]
+#         
+#         Feature_frame=pd.DataFrame(self)
+#         
+#         Feature2=Feature_frame.iloc[h3-h2:h3,:].rolling(h2).mean
+#         
+#         Feature2=Feature2.values
+#         
+#         Feature3=Feature_frame.iloc[:-h3,:].rolling(h3).mean
+#         
+#         Feature3=Feature3.values
+#         
+#         Feature_total=np.array(Feature1,Feature2,Feature3)
+#         
+#         #MultiOutputRegressor(GradientBoostingRegressor(random_state=0)).fit(Feature_total,Response).predict(Feature.iloc[-1,:])
+#         
+#         
+#         return print('Under development')
+#         
+# =============================================================================
+            
+    
+    
+    
 
     #def GARCH(self,)
     
@@ -176,7 +220,7 @@ class Predict_cov(object):
 class vol_backtesting(object):
 
   
-    def back_error(self, timeoption,option=None, period=None):
+    def back_error(self, timeoption, option=None, period=None):
         
         if period ==None:
             
