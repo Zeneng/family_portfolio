@@ -73,6 +73,7 @@ class Balance(object):
                 res=opt.minimize(Balance.rosen1,x0, args=(pre_cv,re), method='trust-constr',  jac="2-point", hess=SR1(), bounds=bds,constraints=cnst)
                 #res=opt.minimize(Balance.rosen1,x0, args=(pre_cv,re), method='SLSQP', bounds=bds,constraints=cnst)
         else:
+                
                 bds=opt.Bounds(np.zeros(col_number), np.repeat(np.inf,col_number))
 
                 #cnst=opt.NonlinearConstraint(Balance.rosen,[0],[target])
@@ -88,6 +89,11 @@ class Balance(object):
 
 
                 res=opt.minimize(Balance.rosen2,x0, args=(pre_cv,re,target), method='SLSQP', bounds=bds,constraints=cnst)
+                
+                if np.sum(res.x)>2:
+                    
+                    res=opt.minimize(Balance.rosen2,x0, args=(pre_cv,re,target), method='trust-constr', bounds=bds,constraints=cnst)
+                
 
                 
         
@@ -249,6 +255,7 @@ class Balance(object):
             
             fake_capital_new=Fake_Capital[-1]*(1+Fake_return)
             
+            
             Pre_Capital.append(pre_capital_new)
             
             Real_Capital.append(real_capital_new)
@@ -280,6 +287,7 @@ class Balance(object):
         plt1=matplotlib.pyplot.plot_date(dates, Real_Capital[1:][::-1],'o--')  
         plt1=matplotlib.pyplot.plot_date(dates, Bench_Capital[1:][::-1],'c--')
         plt1=matplotlib.pyplot.plot_date(dates, Fake_Capital[1:][::-1],'r--')
+    
         
         matplotlib.pyplot.figure(3)
         plt1=matplotlib.pyplot.plot_date(dates, Real_Capital[1:][::-1],'g--')  
