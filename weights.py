@@ -16,7 +16,9 @@ from scipy.optimize import SR1
 
 import numpy as np
 
-import matplotlib.pyplot
+import matplotlib
+
+import matplotlib.pyplot as plt
 
 import pandas as pd
 
@@ -281,20 +283,22 @@ class Balance(object):
 
         #plt=matplotlib.pyplot.plot_date(dates, Error,'r--', dates, Real_Capital,'g--', dates, Pre_Capital,'b--', dates, Bench_Capital,'c--')
         matplotlib.pyplot.figure(1)
-        plt=matplotlib.pyplot.plot_date(dates, Error[::-1],'r--')
-        
+        plt.plot_date(dates, Error[::-1],'r--')
+        plt.show()
+
         matplotlib.pyplot.figure(2)
-        plt1=matplotlib.pyplot.plot_date(dates, Real_Capital[1:][::-1],'o--')  
-        plt1=matplotlib.pyplot.plot_date(dates, Bench_Capital[1:][::-1],'c--')
-        plt1=matplotlib.pyplot.plot_date(dates, Fake_Capital[1:][::-1],'r--')
-    
+        plt.plot_date(dates, Real_Capital[1:][::-1],'o--')  
+        plt.plot_date(dates, Bench_Capital[1:][::-1],'c--')
+        plt.plot_date(dates, Fake_Capital[1:][::-1],'r--')
+        plt.show()
         
         matplotlib.pyplot.figure(3)
-        plt1=matplotlib.pyplot.plot_date(dates, Real_Capital[1:][::-1],'g--')  
-        plt1=matplotlib.pyplot.plot_date(dates, Pre_Capital[1:][::-1],'r--')
+        plt.plot_date(dates, Real_Capital[1:][::-1],'g--')  
+        plt.plot_date(dates, Pre_Capital[1:][::-1],'r--')
+        plt.show()
+
         
-        
-        return [Result,Weights,plt,plt1]
+        return [Result,Weights]
        
 
 
