@@ -51,7 +51,7 @@ def main():
 main()
 #the red line the if we predicted vol 100% correct, and blue dot line is the prediction line
 #the blue dash line is sp100
-table
+#table
 
 
 
