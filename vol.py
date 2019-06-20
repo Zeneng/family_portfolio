@@ -12,7 +12,9 @@ import pandas as pd
 #from datetime import timedelta
 'Variable is stock adj close'
 
-import matplotlib.pyplot
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 import rnn
 
