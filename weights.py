@@ -151,7 +151,7 @@ class Balance(object):
         
         portfolio=self[self.columns[self.columns.isin(selected)]] 
         
-        price=portfolio.iloc[0,:]
+        price=portfolio.iloc[-1,:]
         
         shares=money/price
         #y = [2*a for a in x if a % 2 == 1]

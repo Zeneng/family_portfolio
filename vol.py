@@ -14,6 +14,8 @@ import pandas as pd
 
 import matplotlib.pyplot
 
+import rnn
+
 ##from sklearn.multioutput import MultiOutputRegressor
 ##from sklearn.ensemble import GradientBoostingRegressor
 
@@ -62,13 +64,15 @@ class Covariance(object):
         time=self.index[-1]
         i=-1
         
-        while time > self.index[0]:
+        while time >=self.index[0]:
             try:
                 Time_list.append(time)
                 i=i-timedelta
                 time=self.index[i]
             #time=time-timedelta(days=30)
+            
             except:
+                
                 return [Time_list,timedelta]
                 
 
@@ -206,11 +210,24 @@ class Predict_cov(object):
 
     #def GARCH(self,)
     
-    def Pred(self, weight=None, period=None, option=None):
+    def Pred(self, weight=None, rolling_period=None, option=None):
         
         if option==None:
-            return Predict_cov.EWMA_cov(self, weight, period)
+            return Predict_cov.EWMA_cov(self, weight, rolling_period)
         
+        if option == 'rnn':
+           
+           Recurrent =rnn.RNN(self, False, rolling_period)
+           
+           Recurrent.train()
+           
+           pred_val = Recurrent.forward(self)
+           
+           return pred_val
+        
+            
+    
+
     
         
 #need to adopt HAR model
